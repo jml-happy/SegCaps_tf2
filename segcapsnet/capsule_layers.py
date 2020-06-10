@@ -63,7 +63,7 @@ class Mask(layers.Layer):
 
         else: # Mask using the capsule with maximal length. For prediction
             if inputs.get_shape().ndims == 3:
-                x = K.sqrt(K.sum(K.square(inputs), -1))
+                x = K.sqrt(K.sum(K.square(inputs), -1)) #maximal euclidean length
                 mask = K.one_hot(indices=K.argmax(x, 1), num_classes=x.get_shape().as_list()[1])
                 masked = K.batch_flatten(K.expand_dims(mask, -1) * inputs)
             else:

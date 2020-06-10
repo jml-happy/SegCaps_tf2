@@ -4,11 +4,11 @@
 
 ### Modified by [Cheng-Lin Li](https://cheng-lin-li.github.io/about/)
 ### Objectives: Build up an End-to-End pipeline for Object Segmentation experiments on SegCaps with not only 3D CT images (LUNA 16) but also 2D color images (MS COCO 2017) on Binary Image Segmentation tasks.
-### Modified again by [Jamie Lea](https://github.com/jml-happy/)
+### Modified again by [Jamie Lea](https://jml-happy.github.com)
 ### Objectives: Get working properly TensorFlow 2.2, have fun, and apply SegCaps ideas to own projects.
 
 This is a modification of SegCaps_Cheng to get it working under TensorFlow 2.2
-Recommend not using TF 2.1 under a conda environment (there is a memory leak in Keras that affects this code).
+Recommend not using a conda environment (conda uses their own TF 2.1 fork which has a memory leak in Keras that affects SegCaps).
     * TF 2.1 official releases should have this fixed
 
 Rodney LaLonde's original repo: https://github.com/lalonderodney/SegCaps (hereafter SegCaps_LaLonde) by Rodney LaLonde
