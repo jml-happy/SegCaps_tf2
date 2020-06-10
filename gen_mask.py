@@ -290,4 +290,3 @@ if __name__ == '__main__':
     # do a bit of cleanup
     vs.release()
     cv2.destroyAllWindows()  
-    

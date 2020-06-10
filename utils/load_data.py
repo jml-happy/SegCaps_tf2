@@ -49,7 +49,12 @@ def load_data(root, split):
         reader = csv.reader(f)
         testing_list = list(reader)
 
-    new_training_list, validation_list = train_test_split(training_list, test_size = 0.1, random_state = 7)
+    if len(training_list) == 1:
+        new_training_list = training_list
+        validation_list = training_list
+    else:
+        new_training_list, validation_list = train_test_split(training_list, test_size = 0.1, random_state = 7)
+        
     if new_training_list == []: # if training_list only have 1 image file.
         new_training_list = validation_list
     return new_training_list, validation_list, testing_list

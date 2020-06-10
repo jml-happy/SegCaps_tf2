@@ -8,8 +8,8 @@ If you have any questions, please email me at lalonde@knights.ucf.edu.
 This file contains the network definitions for the various capsule network architectures.
 '''
 
-from keras import layers, models
-from keras import backend as K
+from tensorflow.keras import layers, models
+from tensorflow.keras import backend as K
     
 K.set_image_data_format('channels_last')
 
@@ -23,7 +23,7 @@ def CapsNetR3(input_shape, n_class=2, enable_decoder=True):
 
     # Reshape layer to be 1 capsule x [filters] atoms
     _, H, W, C = conv1.get_shape() # _, 512, 512, 16
-    conv1_reshaped = layers.Reshape((H.value, W.value, 1, C.value))(conv1)
+    conv1_reshaped = layers.Reshape((H, W, 1, C))(conv1)
 
     # Layer 1: Primary Capsule: Conv cap with routing 1
     primary_caps = ConvCapsuleLayer(kernel_size=5, num_capsule=2, num_atoms=16, strides=2, padding='same',
@@ -95,7 +95,7 @@ def CapsNetR3(input_shape, n_class=2, enable_decoder=True):
     masked = Mask()(seg_caps)  # Mask using the capsule with maximal length. For prediction ()
 
     def shared_decoder(mask_layer):
-        recon_remove_dim = layers.Reshape((H.value, W.value, A.value))(mask_layer) #mask_layer=(?, 512, 512, 1, 16)
+        recon_remove_dim = layers.Reshape((H, W, A))(mask_layer) #mask_layer=(?, 512, 512, 1, 16)
 
         recon_1 = layers.Conv2D(filters=64, kernel_size=1, padding='same', kernel_initializer='he_normal',
                                 activation='relu', name='recon_1')(recon_remove_dim)
@@ -115,7 +115,7 @@ def CapsNetR3(input_shape, n_class=2, enable_decoder=True):
     else:
         eval_model = models.Model(inputs=x, outputs=[out_seg])
     # manipulate model
-    noise = layers.Input(shape=((H.value, W.value, C.value, A.value)))
+    noise = layers.Input(shape=((H, W, C, A)))
     noised_seg_caps = layers.Add()([seg_caps, noise])
     masked_noised_y = Mask()([noised_seg_caps, y])
     manipulate_model = models.Model(inputs=[x, y, noise], outputs=shared_decoder(masked_noised_y))
@@ -131,7 +131,7 @@ def CapsNetR1(input_shape, n_class=2):
 
     # Reshape layer to be 1 capsule x [filters] atoms
     _, H, W, C = conv1.get_shape()
-    conv1_reshaped = layers.Reshape((H.value, W.value, 1, C.value))(conv1)
+    conv1_reshaped = layers.Reshape((H, W, 1, C))(conv1)
 
     # Layer 1: Primary Capsule: Conv cap with routing 1
     primary_caps = ConvCapsuleLayer(kernel_size=5, num_capsule=2, num_atoms=16, strides=2, padding='same',
@@ -203,7 +203,7 @@ def CapsNetR1(input_shape, n_class=2):
     masked = Mask()(seg_caps)  # Mask using the capsule with maximal length. For prediction
 
     def shared_decoder(mask_layer):
-        recon_remove_dim = layers.Reshape((H.value, W.value, A.value))(mask_layer)
+        recon_remove_dim = layers.Reshape((H, W, A))(mask_layer)
 
         recon_1 = layers.Conv2D(filters=64, kernel_size=1, padding='same', kernel_initializer='he_normal',
                                 activation='relu', name='recon_1')(recon_remove_dim)
@@ -221,7 +221,7 @@ def CapsNetR1(input_shape, n_class=2):
     eval_model = models.Model(inputs=x, outputs=[out_seg, shared_decoder(masked)])
 
     # manipulate model
-    noise = layers.Input(shape=((H.value, W.value, C.value, A.value)))
+    noise = layers.Input(shape=((H, W, C, A)))
     noised_seg_caps = layers.Add()([seg_caps, noise])
     masked_noised_y = Mask()([noised_seg_caps, y])
     manipulate_model = models.Model(inputs=[x, y, noise], outputs=shared_decoder(masked_noised_y))
@@ -237,7 +237,7 @@ def CapsNetBasic(input_shape, n_class=2):
 
     # Reshape layer to be 1 capsule x [filters] atoms
     _, H, W, C = conv1.get_shape()
-    conv1_reshaped = layers.Reshape((H.value, W.value, 1, C.value))(conv1)
+    conv1_reshaped = layers.Reshape((H, W, 1, C))(conv1)
 
     # Layer 1: Primary Capsule: Conv cap with routing 1
     primary_caps = ConvCapsuleLayer(kernel_size=5, num_capsule=8, num_atoms=32, strides=1, padding='same',
@@ -257,7 +257,7 @@ def CapsNetBasic(input_shape, n_class=2):
     masked = Mask()(seg_caps)  # Mask using the capsule with maximal length. For prediction
 
     def shared_decoder(mask_layer):
-        recon_remove_dim = layers.Reshape((H.value, W.value, A.value))(mask_layer)
+        recon_remove_dim = layers.Reshape((H, W, A))(mask_layer)
 
         recon_1 = layers.Conv2D(filters=64, kernel_size=1, padding='same', kernel_initializer='he_normal',
                                 activation='relu', name='recon_1')(recon_remove_dim)
@@ -275,7 +275,7 @@ def CapsNetBasic(input_shape, n_class=2):
     eval_model = models.Model(inputs=x, outputs=[out_seg, shared_decoder(masked)])
 
     # manipulate model
-    noise = layers.Input(shape=((H.value, W.value, C.value, A.value)))
+    noise = layers.Input(shape=((H, W, C, A)))
     noised_seg_caps = layers.Add()([seg_caps, noise])
     masked_noised_y = Mask()([noised_seg_caps, y])
     manipulate_model = models.Model(inputs=[x, y, noise], outputs=shared_decoder(masked_noised_y))

@@ -43,11 +43,11 @@ plt.ioff()
 from os.path import join
 import numpy as np
 
-from keras.optimizers import Adam
-from keras import backend as K
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras import backend as K
 K.set_image_data_format('channels_last')
-from keras.utils.training_utils import multi_gpu_model
-from keras.callbacks import ModelCheckpoint, CSVLogger, EarlyStopping, ReduceLROnPlateau, TensorBoard
+from tensorflow.keras.utils import multi_gpu_model
+from tensorflow.keras.callbacks import ModelCheckpoint, CSVLogger, EarlyStopping, ReduceLROnPlateau, TensorBoard
 import tensorflow as tf
 
 from utils.custom_losses import dice_hard, weighted_binary_crossentropy_loss, dice_loss, margin_loss, bce_dice_loss
@@ -85,7 +85,8 @@ def get_callbacks(arguments):
         monitor_name = 'val_dice_hard'
 
     csv_logger = CSVLogger(join(arguments.log_dir, arguments.output_name + '_log_' + arguments.time + '.csv'), separator=',')
-    tb = TensorBoard(arguments.tf_log_dir, batch_size=arguments.batch_size, histogram_freq=0)
+    # removed batch_size from tensorboard callback because not needed in TF2
+    tb = TensorBoard(arguments.tf_log_dir, histogram_freq=0)
     # Due to customized major layers and loss function, the program just store the model weights.
     # Model should be load by program then load the model weights for inference.
     model_checkpoint = ModelCheckpoint(join(arguments.check_dir, arguments.output_name + '_model_' + arguments.time + '.hdf5'),
@@ -191,8 +192,19 @@ def train(args, train_list, val_list, u_model, net_input_shape):
 #         verbose=1)
 
 # POC testing, change stride from 20 to args.stride in generate_val_batches
+
+    # checks on batch size and checks
+    if args.batch_size > len(train_list):
+        args.batch_size = len(train_list)
+
+    if args.steps_per_epoch * args.batch_size > len(train_list):
+        args.steps_per_epoch = len(train_list) // args.batch_size
+
+    if args.val_steps_per_epoch * args.batch_size > len(val_list):
+        args.val_steps_per_epoch = len(val_list) // args.batch_size
+
     generate_train_batches, generate_val_batches, _ = get_generator(args.dataset)
-    history = model.fit_generator(
+    history = model.fit(
         generate_train_batches(args.data_root_dir, train_list, net_input_shape, net=args.net,
                                batchSize=args.batch_size, numSlices=args.slices, subSampAmt=args.subsamp,
                                stride=args.stride, shuff=args.shuffle_data, aug_data=args.aug_data),
@@ -201,7 +213,7 @@ def train(args, train_list, val_list, u_model, net_input_shape):
         validation_data=generate_val_batches(args.data_root_dir, val_list, net_input_shape, net=args.net,
                                              batchSize=args.batch_size,  numSlices=args.slices, subSampAmt=0,
                                              stride=args.stride, shuff=args.shuffle_data),
-        validation_steps=5, # Set validation stride larger to see more of the data.
+        validation_steps=args.val_steps_per_epoch, # Set validation stride larger to see more of the data.
         epochs=args.epochs,
         callbacks=callbacks,
         verbose=1)

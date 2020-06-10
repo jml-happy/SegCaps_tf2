@@ -50,8 +50,7 @@ import scipy.ndimage.morphology
 from skimage import measure, filters
 from utils.metrics import dc, jc, assd
 from PIL import Image
-from keras import backend as K
-from keras.utils import print_summary
+from tensorflow.keras import backend as K
 from utils.data_helper import get_generator
 from utils.custom_data_aug import convert_img_data, convert_mask_data
 
@@ -134,8 +133,8 @@ def test(args, test_list, model_list, net_input_shape):
         eval_model.load_weights(weights_path)
     except:
         logging.warning('\nUnable to find weights path. Testing with random weights.')
-    print_summary(model=eval_model, positions=[.38, .65, .75, 1.])
-
+    mdl_eval_summary = eval_model.summary(positions=[.38, .65, .75, 1.])
+    print(mdl_eval_summary)
     # Set up placeholders
     outfile = ''
     if args.compute_dice:
@@ -173,9 +172,9 @@ def test(args, test_list, model_list, net_input_shape):
                 img_data = convert_img_data(img_data, 3)
 
             num_slices = 1               
-            logging.info('\ntest.test: eval_model.predict_generator')
+            logging.info('\ntest.test: eval_model.predict')
             _, _, generate_test_batches = get_generator(args.dataset)
-            output_array = eval_model.predict_generator(generate_test_batches(args.data_root_dir, [img],
+            output_array = eval_model.predict(generate_test_batches(args.data_root_dir, [img],
                                                                               net_input_shape,
                                                                               batchSize=args.batch_size,
                                                                               numSlices=args.slices,

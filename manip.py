@@ -21,9 +21,8 @@ from PIL import Image
 import numpy as np
 import math
 
-from keras import backend as K
+from tensorflow.keras import backend as K
 K.set_image_data_format('channels_last')
-from keras.utils import print_summary
 
 
 def combine_images(generated_images, height=None, width=None):
@@ -66,8 +65,8 @@ def manip(args, test_list, model_list, net_input_shape):
         manip_model.load_weights(weights_path)
     except:
         print('Unable to find weights path. Testing with random weights.')
-    print_summary(model=manip_model, positions=[.38, .65, .75, 1.])
-
+    mdl_manip_summary = manip_model.summary(positions=[.38, .65, .75, 1.])
+    print(mdl_manip_summary)
 
     # Manipulating capsule vectors
     print('Testing... This will take some time...')

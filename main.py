@@ -41,11 +41,18 @@ Enhancement:
   7. Add number of patience for early stop of training to users.
   8. Add 'bce_dice' loss function as binary cross entropy + soft dice coefficient.
   9. Revise 'train', 'test', 'manip' flags from 0 or 1 to flags show up or not to indicate the behavior of main program.
+
+==============
+
+This fork is an update by Jamie Lea (jmltf7@mail.umsl.edu) that converts the project to TF 2.x (targetting 2.2).
+I am not a Tensorflow expert, and would appreciate any and all feedback to make it more TF 2.2 idiomatic.
+There is sitll much to do.  However, I did this mainly to get at the layers, losses, etc.  Not the project itself.
 '''
 
 from __future__ import print_function
 import sys
 import logging
+import os
 import platform
 from os.path import join
 from os import makedirs
@@ -53,7 +60,6 @@ from os import environ
 import argparse
 import SimpleITK as sitk  # image process
 from time import gmtime, strftime
-from keras.utils import print_summary
 from utils.load_data import load_data, split_data
 from utils.model_helper import create_model
 
@@ -93,7 +99,8 @@ def main(args):
     # enable_decoder = False only for SegCaps R3 to disable recognition image output on evaluation model 
     # to speed up performance.
     model_list = create_model(args=args, input_shape=net_input_shape, enable_decoder=True)
-    print_summary(model=model_list[0], positions=[.38, .65, .75, 1.])
+    mdl_summary = model_list[0].summary(positions=[.38, .65, .75, 1.])
+    print(mdl_summary)
 
     args.output_name = 'split-' + str(args.split_num) + '_batch-' + str(args.batch_size) + \
                        '_shuff-' + str(args.shuffle_data) + '_aug-' + str(args.aug_data) + \
@@ -104,10 +111,13 @@ def main(args):
 #     args.output_name = 'sh-' + str(args.shuffle_data) + '_a-' + str(args.aug_data)
 
     args.time = time
-    if platform.system() == 'Windows':
-        args.use_multiprocessing = False
-    else:
-        args.use_multiprocessing = True
+    # multiprocessing always false
+    args.use_multiprocessing = False
+    # if platform.system() == 'Windows':
+    #     args.use_multiprocessing = False
+    # else:
+    #     args.use_multiprocessing = True
+
     args.check_dir = join(args.data_root_dir,'saved_models', args.net)
     try:
         makedirs(args.check_dir)
@@ -148,19 +158,34 @@ def main(args):
         manip(args, test_list, model_list, net_input_shape)
 
 
-def loglevel(level=0):
-    assert isinstance(level, int)
-    try:
-        return [
-            # logging.CRITICAL,
-            # logging.ERROR,
-            logging.WARNING,  # default
-            logging.INFO,
-            logging.DEBUG,
-            logging.NOTSET,
-            ][level]
-    except LookupError:
-        return logging.NOTSET
+# Quick way to deal with excessive logging messages.  It seems there's so much flexibility now,
+# it's hard to just handle correctly anmd simply.  
+# Come back to this when I have a better understanding.
+loglevel_choices = ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
+def loglevel(level="INFO"):
+    assert isinstance(level, str)
+    log_dict = {"DEBUG": '0', "INFO": '1', "WARNSACXz": '2', "ERROR": '3', "FATAL": '4'}
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = log_dict[level]
+    
+    
+#    if level in loglevel_choices:
+#        tf.get_logger().setLevel(level)
+#    else:
+#        tf.get_logger.setlevel(level)
+#        
+#    try:
+#        return [
+#          # logging.CRITICAL,
+#          # logging.ERROR,
+#            logging.WARNING,  # default
+#            logging.INFO,
+#            logging.DEBUG,
+#            logging.NOTSET,
+#            ][level]
+#        tf_log.set_verbosity([
+#            tf_log.CRITICAL
+#    except LookupError:
+#        return logging.NOTSET
 
 
 if __name__ == '__main__':
@@ -173,7 +198,7 @@ if __name__ == '__main__':
                         help='/path/to/trained_model.hdf5 from root. Set to "" for none.')
     parser.add_argument('--split_num', type=int, default = 0,
                         help='Which training split to train/test on.')
-    parser.add_argument('--net', type=str.lower, default='segcapsr3',
+    parser.add_argument('--net', type=str.lower, default='capsbasic',
                         choices=['segcapsr3', 'segcapsr1', 'capsbasic', 'unet', 'tiramisu'],
                         help='Choose your network.')
     parser.add_argument('--train', action='store_true',
@@ -201,6 +226,8 @@ if __name__ == '__main__':
                         help='Initial learning rate for Adam.')
     parser.add_argument('--steps_per_epoch', type=int, default=1000,
                         help='Number of iterations in an epoch.')
+    parser.add_argument('--val_steps_per_epoch', type=int, default=5,
+                        help='Number of validation steps.')
     parser.add_argument('--epochs', type=int, default=20,
                         help='Number of epochs for training.')
     parser.add_argument('--patience', type=int, default=10,
@@ -253,14 +280,21 @@ if __name__ == '__main__':
     parser.add_argument('--retrain', type=int, default=0, choices=[0, 1], help='Retrain your model based on existing weights.'
                             ' default 0=train your model from scratch, 1 = retrain existing model.'
                             ' The weights file location of the model has to be provided by --weights_path parameter' )    
-    parser.add_argument('--loglevel', type=int, default=4, help='loglevel 3 = debug, 2 = info, 1 = warning, '
-                            ' 4 = error, > 4 =critical') 
+#    parser.add_argument('--loglevel', type=int, default=0, help='loglevel 3 = debug, 2 = info, 1 = warning, '
+#                            ' 4 = error, > 4 =critical. Currently loglevel 0 (default) gives least terminal clutter.') 
+
+    parser.add_argument("--loglevel", type=str, default="INFO", choices=loglevel_choices,
+                        help='''
+                        Choices are: ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"], default is 'WARN'.  Setting a level
+                        filters out lower levels (earlier in the list).
+                        ''')
     arguments = parser.parse_args()
 
     # assuming loglevel is bound to the string value obtained from the
     # command line argument. Convert to upper case to allow the user to
     # specify --log=DEBUG or --log=debug
-    logging.basicConfig(format=LOGGING_FORMAT, level=loglevel(arguments.loglevel), stream=sys.stderr)
+#    logging.basicConfig(format=LOGGING_FORMAT, level=loglevel(arguments.loglevel), stream=sys.stderr)
+    loglevel(arguments.loglevel)
 
     if arguments.which_gpus == -2:
         environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"

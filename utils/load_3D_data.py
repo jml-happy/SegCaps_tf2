@@ -350,4 +350,3 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
 
     if count != 0:
         yield (img_batch[:count,:,:,:])
-        

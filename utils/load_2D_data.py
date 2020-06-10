@@ -314,4 +314,3 @@ def generate_test_image(test_img, net_input_shape, batchSize=1, numSlices=1, sub
     test_img = convert_img_data(test_img, 4)
         
     yield (test_img)
-       
