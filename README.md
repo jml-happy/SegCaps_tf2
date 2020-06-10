@@ -4,7 +4,7 @@
 
 ### Modified by [Cheng-Lin Li](https://cheng-lin-li.github.io/about/)
 ### Objectives: Build up an End-to-End pipeline for Object Segmentation experiments on SegCaps with not only 3D CT images (LUNA 16) but also 2D color images (MS COCO 2017) on Binary Image Segmentation tasks.
-### Modified again by [Jamie Lea](https://jml-happy.github.com)
+### Modified again by [Jamie Lea](https://github.com/jml-happy/)
 ### Objectives: Get working properly TensorFlow 2.2, have fun, and apply SegCaps ideas to own projects.
 
 ## This repository downloaded from the official website of SegCaps implementation with program restructure and enhancements.
