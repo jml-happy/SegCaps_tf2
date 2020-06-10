@@ -257,7 +257,8 @@ def test(args, test_list, model_list, net_input_shape):
     
                 plt.savefig(join(fig_out_dir, img[0][:-4] + '_qual_fig' + '.png'),
                             format='png', bbox_inches='tight')
-                plt.close('all')   
+                plt.close('all')  
+                f.close() 
 
             # Compute metrics
             row = [img[0][:-4]]

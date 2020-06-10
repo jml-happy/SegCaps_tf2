@@ -7,6 +7,56 @@
 ### Modified again by [Jamie Lea](https://jml-happy.github.com)
 ### Objectives: Get working properly TensorFlow 2.2, have fun, and apply SegCaps ideas to own projects.
 
+This is a modification of SegCaps_Cheng to get it working under TensorFlow 2.2
+Recommend not using TF 2.1 under a conda environment (there is a memory leak in Keras that affects this code).
+    * TF 2.1 official releases should have this fixed
+
+Rodney LaLonde's original repo: https://github.com/lalonderodney/SegCaps (hereafter SegCaps_LaLonde) by Rodney LaLonde
+Cheng Lin Li's enhanced repo: github.com/Cheng-Lin-Li/SegCaps (hereafter SegCaps_Cheng) by Cheng Lin Li
+
+#### Upgrade Fixes:
+
+1. Ran google tensorflow 2 upgrade script
+2. Changed shape[i].values to shape[i] throughout
+3. Changed model_summary() function calls to model.summary() class methods
+4. Changed import keras to import tensorflow.keras
+    -- except ```from keras.utils.conv_utils import conv_output_length, deconv_length```
+        which do not seem to be exposed through the TF 2.2 API
+
+5. Fixed issue with Kfold=1 / overfitting causing scikit-learn splitting to fail
+6. Fixed issue with tf.mul getting two differnt types.
+    Cast the inpt to weighted_cross_entropy_with_logits in custom losses
+7. Other changes that may not be noted in this file (oops)
+    * TODO: diff files to find other small changes I made before mirror.
+
+#### Upgrade Tweaks:
+
+1. Changed --loglevel code to use ```os.environ['TF_CPP_MIN_LOG_LEVEL']```
+    * Previous log options do not really work in TF 2.2 (e.g. cannot remove all clutter)
+    * TODO: investigate previous logging system and Python logging system to see if there is better solution
+2. Set args.multiprocessing = False (regardless of platform) for TF 2.2
+3. Removed batch_size from tensorboard callback
+4. Changed --net default to capsbasic (smallest capsule network model)
+5. Code to calculate steps per epoch based on batch_size, len(train_list), len(val_list)
+    * added val_steps_per_epoch argument
+    *  process argument with code:
+        ```python
+         # checks on batch size and checks
+        if args.batch_size > len(train_list):
+            args.batch_size = len(train_list)
+
+        if args.steps_per_epoch * args.batch_size > len(train_list):
+            args.steps_per_epoch = len(train_list) // args.batch_size
+
+        if args.val_steps_per_epoch * args.batch_size > len(val_list):
+            args.val_steps_per_epoch = len(val_list) // args.batch_size
+        ```
+
+6. Added comment explaining the tensor reshaping in the ConvCapsuleLayer call method
+7. Added script ```collect_masks_and_softlink.py``` to ease subsetting of LUNA16
+
+
+# Cheng Lin Li's README.md follows, which includes Rodney LaLodne's README.md
 ## This repository downloaded from the official website of SegCaps implementation with program restructure and enhancements.
 
 The original paper for SegCaps can be found at https://arxiv.org/abs/1804.04241.
