@@ -86,12 +86,15 @@ def CapsNetR3(input_shape, n_class=2, enable_decoder=True):
                                 routings=3, name='seg_caps')(up_3)
 
     # Layer 4: This is an auxiliary layer to replace each capsule with its length. Just to match the true label's shape.
+    # Calculates euclidean norm via tf.norm
     out_seg = Length(num_classes=n_class, seg=True, name='out_seg')(seg_caps)
 
     # Decoder network.
     _, H, W, C, A = seg_caps.get_shape() #(?, 512, 512, 1, 16)
     y = layers.Input(shape=input_shape[:-1]+(1,)) #y: keras_shape(512, 512, 1)
+    # Simply multiplication of the two.
     masked_by_y = Mask()([seg_caps, y])  # The true label is used to mask the output of capsule layer. For training (None, 512, 512, 1, 16)
+    # Manually calculates euclidean norm (not using tf.norm?) and then uses onehot?
     masked = Mask()(seg_caps)  # Mask using the capsule with maximal length. For prediction ()
 
     def shared_decoder(mask_layer):
