@@ -108,12 +108,27 @@ venv.bak/
 .project
 
 # SegCaps
-data/evaluationScript
-data/figs/
-data/imgs/
-data/logs/
-data/masks/
-data/np_files/
-data/plots/
-data/results/
+one_image/evaluationScript
+one_image/figs/
+one_image/logs/
+one_image/np_files/
+one_image/plots/
+one_image/results/
+one_image/saved_models/
+one_image/split_lists
+
+one_image_two_dogs/evaluationScript
+one_image_two_dogs/figs/
+one_image_two_dogs/logs/
+one_image_two_dogs/np_files/
+one_image_two_dogs/plots/
+one_image_two_dogs/results/
+one_image_two_dogs/saved_models/
+one_image_two_dogs/split_lists
+
+cococrawler/annotations/
+
 reference/
+one_image_graymask/
+my_data/
+.ipynb_checkpoints/
