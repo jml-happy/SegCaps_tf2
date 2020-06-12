@@ -7,12 +7,12 @@
 ### Modified again by [Jamie Lea](https://jml-happy.github.com)
 ### Objectives: Get working properly TensorFlow 2.2, have fun, and apply SegCaps ideas to own projects.
 
+Rodney LaLonde's original repo: https://github.com/lalonderodney/SegCaps (hereafter SegCaps_LaLonde) by Rodney LaLonde
+Cheng Lin Li's enhanced repo: github.com/Cheng-Lin-Li/SegCaps (hereafter SegCaps_Cheng) by Cheng Lin Li
+
 This is a modification of SegCaps_Cheng to get it working under TensorFlow 2.2
 Recommend not using a conda environment (conda uses their own TF 2.1 fork which has a memory leak in Keras that affects SegCaps).
     * TF 2.1 official releases should have this fixed
-
-Rodney LaLonde's original repo: https://github.com/lalonderodney/SegCaps (hereafter SegCaps_LaLonde) by Rodney LaLonde
-Cheng Lin Li's enhanced repo: github.com/Cheng-Lin-Li/SegCaps (hereafter SegCaps_Cheng) by Cheng Lin Li
 
 #### Upgrade Fixes:
 
@@ -20,13 +20,27 @@ Cheng Lin Li's enhanced repo: github.com/Cheng-Lin-Li/SegCaps (hereafter SegCaps
 2. Changed shape[i].values to shape[i] throughout
 3. Changed model_summary() function calls to model.summary() class methods
 4. Changed import keras to import tensorflow.keras
-    -- except ```from keras.utils.conv_utils import conv_output_length, deconv_length```
+    * except ```from keras.utils.conv_utils import conv_output_length, deconv_length```
         which do not seem to be exposed through the TF 2.2 API
 
 5. Fixed issue with Kfold=1 / overfitting causing scikit-learn splitting to fail
 6. Fixed issue with tf.mul getting two differnt types.
-    Cast the inpt to weighted_cross_entropy_with_logits in custom losses
-7. Other changes that may not be noted in this file (oops)
+    * Cast the input to weighted_cross_entropy_with_logits in custom losses
+
+7. Fixed problem with GREYSCALE = False (e.g. RGB images are now not changed)
+    * Changed mask batch shape in validation generator to produce grayscale masks (to match train)
+    * To use RGBA images with grayscale masks:
+      * set GRAYSCALE = False in: main.py, test.py, custom_data_aug.py
+      * convert the grayscale masks to RGBA.  Example with image magick:
+        ``` sudo apt-get install imagemagick```
+        ``` cd # to masks folder```
+        ```mogrify -define png:format=png32 -type TrueColor *.png```
+        Now it should work.
+        Note: the RGBA grayscale images will be converted to 1 channel binary masks
+              so no multi-class masking!
+8. Qualitative plots for 2D images are not created since they are not drawn (save memory)
+
+* Other small changes that may not be noted in this file (oops)
     * TODO: diff files to find other small changes I made before mirror.
 
 #### Upgrade Tweaks:
@@ -54,6 +68,11 @@ Cheng Lin Li's enhanced repo: github.com/Cheng-Lin-Li/SegCaps (hereafter SegCaps
 
 6. Added comment explaining the tensor reshaping in the ConvCapsuleLayer call method
 7. Added script ```collect_masks_and_softlink.py``` to ease subsetting of LUNA16
+8. Renamed data folder to "one_image" to be more correct, added a "one_image_two_dogs" example
+    * this is to show how an RGBA mask with > 2 colors still becomes binary
+9. Experimenting with the cococrawler.py
+10. Added a script to inspect the .npz files
+11. Changed the way debug images are saved (three images: image, mask, combined)
 
 
 # Cheng Lin Li's README.md follows, which includes Rodney LaLodne's README.md

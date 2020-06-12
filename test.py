@@ -59,7 +59,7 @@ plt.ioff()
 K.set_image_data_format('channels_last')
 
 RESOLUTION = 512
-GRAYSCALE = True
+GRAYSCALE = False
 
 
 def threshold_mask(raw_output, threshold):
@@ -225,12 +225,13 @@ def test(args, test_list, model_list, net_input_shape):
                 gt_data = gt_data.reshape([1, gt_data.shape[0], gt_data.shape[1]])
 
             # Plot Qual Figure
-            print('Creating Qualitative Figure for Quick Reference')
-            f, ax = plt.subplots(1, 3, figsize=(15, 5))
             
-            if args.dataset == 'mscoco17':               
+            if args.dataset == 'mscoco17':   
+                print("Skipping Qualitative Figure because 2D data...")            
                 pass
             else: # 3D data
+                print('Creating Qualitative Figure for Quick Reference')
+                f, ax = plt.subplots(1, 3, figsize=(15, 5))
                 ax[0].imshow(img_data[img_data.shape[0] // 3, :, :], alpha=1, cmap='gray')
                 ax[0].imshow(output_bin[img_data.shape[0] // 3, :, :], alpha=0.5, cmap='Blues')
                 ax[0].imshow(gt_data[img_data.shape[0] // 3, :, :], alpha=0.2, cmap='Reds')

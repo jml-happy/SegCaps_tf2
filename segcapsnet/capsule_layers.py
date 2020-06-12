@@ -56,6 +56,39 @@ class Mask(layers.Layer):
             if self.resize_masks:
                 mask = tf.image.resize(mask, (hei, wid), method=tf.image.ResizeMethod.BICUBIC)
             mask = K.expand_dims(mask, -1) #mask = (?, 512, 512, 1, 1)
+
+            # debug color images ###########################################
+            # print("\n")
+            print("\nMASK LAYER: input.get_shape().ndims", input.get_shape().ndims)
+            print("MASK LAYER: input.get_shape()", input.get_shape())
+            # print("input.shape", input.shape)
+
+            # print("")
+
+            # print("len(input[input): ", len(input))
+            # print("len(input[input[0,:]): ", len(input[0,:]))
+            # print("len(input[input[0,0,:]): ", len(input[0,0,:]))
+            # print("len(input[input[0,0,0,:]): ", len(input[0,0,0,:]))
+            # print("len(input[input[0,0,0,0,:]): ", len(input[0,0,0,0,:]))
+
+            # ###
+            # print("\n")
+            # ###
+
+            print("MASK LAYER: mask.get_shape().ndims", mask.get_shape().ndims)
+            print("MASK LAYER: mask.get_shape()", mask.get_shape())
+            # print("mask.shape", mask.shape)
+
+            # print("")
+
+            # print("len(mask[mask): ", len(mask))
+            # print("len(mask[mask[0,:]): ", len(mask[0,:]))
+            # print("len(mask[mask[0,0,:]): ", len(mask[0,0,:]))
+            # print("len(mask[mask[0,0,0,:]): ", len(mask[0,0,0,:]))
+            # print("len(mask[mask[0,0,0,0,:]): ", len(mask[0,0,0,0,:]))
+            # print("\n\n")
+            # ##############################################################
+
             if input.get_shape().ndims == 3:
                 masked = K.batch_flatten(mask * input)
             else:
@@ -72,7 +105,12 @@ class Mask(layers.Layer):
         return masked
 
     def compute_output_shape(self, input_shape):
+    #     print("IN MASK COMPUTE OUTPUT SHAPE:")
+    #     print("input_shape: ", input_shape)
+    #     print("type(input_shape[0]: ", type(input_shape[0]))
+    #     print("input_shape[0]: ", input_shape[0])
         if type(input_shape[0]) is tuple:  # true label provided
+            # print("len(input_shape[0]): ", len(input_shape[0]))
             if len(input_shape[0]) == 3:
                 return tuple([None, input_shape[0][1] * input_shape[0][2]])
             else:
@@ -134,7 +172,7 @@ class ConvCapsuleLayer(layers.Layer):
         # [None, input_height, input_width, input_num_capsule, input_num_atoms]
         # =>
         # convolution is done on a tensor of shape:
-        # [num_capsults * batch_size, input_height, input_width, num_atoms]
+        # [num_capsules * batch_size, input_height, input_width, num_atoms]
 
         # each capsule for each sample essentially becomes as "sample" as interpreted by the cond2d layer
         # num atoms is length of pose vector => number of channel

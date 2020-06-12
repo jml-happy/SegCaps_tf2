@@ -48,7 +48,7 @@ plt.ioff()
 from utils.custom_data_aug import augmentImages, convert_img_data, convert_mask_data
 from utils.threadsafe import threadsafe_generator
 
-debug = 0    
+debug = True    
     
 def convert_data_to_numpy(root_path, img_name, no_masks=False, overwrite=False):
     fname = img_name[:-4]
@@ -111,9 +111,14 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
                            stride=1, downSampAmt=1, shuff=1, aug_data=1):
     # Create placeholders for training
     # (img_shape[1], img_shape[2], args.slices)
+    print(f"\n\nTRAIN: net_input_shape: {net_input_shape}, net: {net}")
     logging.info('\n2d_generate_train_batches')
+
     img_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
+    # mask_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
     mask_batch = np.zeros((np.concatenate(((batchSize,), (net_input_shape[0], net_input_shape[1], 1)))), dtype=np.uint8)
+    print("TRAIN GEN: img_batch.ndim: ", img_batch.ndim)
+    print("TRAIN GEN: mask_batch.ndim: ", mask_batch.ndim)
 
     while True:
         if shuff:
@@ -141,17 +146,33 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
             elif subSampAmt == -1 and numSlices > 1: # Only one slices. code can be removed.
                 np.random.seed(None)
                 subSampAmt = int(rand(1)*(train_img.shape[2]*0.05))
-            # We don't need indicies in 2D image.
+            # We don't need indicies in 2D image.  # ?????????????????
             indicies = np.arange(0, train_img.shape[2] - numSlices * (subSampAmt + 1) + 1, stride)
             if shuff:
                 shuffle(indicies)
 
             for j in indicies:
+
                 if not np.any(train_mask[:, :, j:j + numSlices * (subSampAmt+1):subSampAmt+1]):
                     continue
+                # print("\nIn generator:")
+                # print("len(input[img_batch): ", len(img_batch))
+                # print("len(input[img_batch[0,:]): ", len(img_batch[0,:]))
+                # print("len(input[img_batch[0,0,:]): ", len(img_batch[0,0,:]))
+                # print("len(input[img_batch[0,0,0,:]): ", len(img_batch[0,0,0,:]))
+
+                # print("\n")
+
+                # print("len(input[mask_batch): ", len(mask_batch))
+                # print("len(input[mask_batch[0,:]): ", len(mask_batch[0,:]))
+                # print("len(input[mask_batch[0,0,:]): ", len(mask_batch[0,0,:]))
+                # print("len(input[mask_batch[0,0,0,:]): ", len(mask_batch[0,0,0,:]))
+                #####  THIS IS FOR 2D (IMAGE) DATA #####
                 if img_batch.ndim == 4:
                     img_batch[count, :, :, :] = train_img[:, :, j:j + numSlices * (subSampAmt+1):subSampAmt+1]
                     mask_batch[count, :, :, :] = train_mask[:, :, j:j + numSlices * (subSampAmt+1):subSampAmt+1]
+
+                #####  THIS IS FOR 3D (CAT SCAN) DATA #####
                 elif img_batch.ndim == 5:
                     # Assumes img and mask are single channel. Replace 0 with : if multi-channel.
                     img_batch[count, :, :, :, 0] = train_img[:, :, j:j + numSlices * (subSampAmt+1):subSampAmt+1]
@@ -160,23 +181,54 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
                     logging.error('\nError this function currently only supports 2D and 3D data.')
                     exit(0)
 
+
+                print("TRAIN GEN LOOP: img_batch.shape: ", img_batch.shape)
+                print("TRAIN GEN LOOP: mask_batch.shape: ", mask_batch.shape)
                 count += 1
                 if count % batchSize == 0:
                     count = 0
                     if aug_data:
                         img_batch, mask_batch = augmentImages(img_batch, mask_batch)
                     if debug:
+                    ######### SAVE THE IMAGE + MASK
+                    #####  THIS IS FOR 2D (IMAGE) DATA #####
                         if img_batch.ndim == 4:
                             plt.imshow(np.squeeze(img_batch[0, :, :, 0]), cmap='gray')
                             plt.imshow(np.squeeze(mask_batch[0, :, :, 0]), alpha=0.15)
+
+                    #####  THIS IS FOR 3D (CAT SCAN) DATA #####
                         elif img_batch.ndim == 5:
                             plt.imshow(np.squeeze(img_batch[0, :, :, 0, 0]), cmap='gray')
                             plt.imshow(np.squeeze(mask_batch[0, :, :, 0, 0]), alpha=0.15)
-                        plt.savefig(join(root_path, 'logs', 'ex_train.png'), format='png', bbox_inches='tight')
+                        plt.savefig(join(root_path, 'logs', 'ex_train-combined.png'), format='png', bbox_inches='tight')
                         plt.close()
+
+                    ######### SAVE THE IMAGE
+                    #####  THIS IS FOR 2D (IMAGE) DATA #####
+                        if img_batch.ndim == 4:
+                            plt.imshow(np.squeeze(img_batch[0, :, :, 0]), cmap='gray')
+
+                    #####  THIS IS FOR 3D (CAT SCAN) DATA #####
+                        elif img_batch.ndim == 5:
+                            plt.imshow(np.squeeze(img_batch[0, :, :, 0, 0]), cmap='gray')
+                        plt.savefig(join(root_path, 'logs', 'ex_train-image.png'), format='png', bbox_inches='tight')
+                        plt.close()
+
+                    ######### SAVE THE  MASK
+                    #####  THIS IS FOR 2D (IMAGE) DATA #####
+                        if img_batch.ndim == 4:
+                            plt.imshow(np.squeeze(mask_batch[0, :, :, 0]), alpha=0.15)
+
+                    #####  THIS IS FOR 3D (CAT SCAN) DATA #####
+                        elif img_batch.ndim == 5:
+                            plt.imshow(np.squeeze(mask_batch[0, :, :, 0, 0]), alpha=0.15)
+                        plt.savefig(join(root_path, 'logs', 'ex_train-mask.png'), format='png', bbox_inches='tight')
+                        plt.close()
+
                     if net.find('caps') != -1: # if the network is capsule/segcaps structure
                         # [(1, 512, 512, 3), (1, 512, 512, 1)], [(1, 512, 512, 1), (1, 512, 512, 3)]
                         # or [(1, 512, 512, 3), (1, 512, 512, 3)], [(1, 512, 512, 3), (1, 512, 512, 3)]
+                        # print("Inside the indice loop!")
                         yield ([img_batch, mask_batch], [mask_batch, mask_batch*img_batch])
                     else:
                         yield (img_batch, mask_batch)
@@ -186,6 +238,7 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
                 img_batch[:count,...], mask_batch[:count,...] = augmentImages(img_batch[:count,...],
                                                                               mask_batch[:count,...])
             if net.find('caps') != -1:
+                # print("Inside the bottom part")
                 yield ([img_batch[:count, ...], mask_batch[:count, ...]],
                        [mask_batch[:count, ...], mask_batch[:count, ...] * img_batch[:count, ...]])
             else:
@@ -194,10 +247,16 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
 @threadsafe_generator
 def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1, numSlices=1, subSampAmt=-1,
                          stride=1, downSampAmt=1, shuff=1):
+    print(f"\nVALID GEN: net_input_shape: {net_input_shape}, net: {net}")
     logging.info('2d_generate_val_batches')
     # Create placeholders for validation
     img_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
-    mask_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.uint8)
+    # mask_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.uint8)  ## originally this
+    # THIS FORECES MASKS TO BE CREYSCALE
+    # 3-channel masks cause crash, even with all GREYSCALE constants set False.
+    mask_batch = np.zeros((np.concatenate(((batchSize,), (net_input_shape[0], net_input_shape[1], 1)))), dtype=np.uint8)  ## changed to this to match train
+    print("VALID GEN: img_batch.ndim: ", img_batch.ndim)
+    print("VALID GEN: mask_batch.ndim: ", mask_batch.ndim)
 
     while True:
         if shuff:
@@ -244,6 +303,8 @@ def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1,
                     logging.error('\nError this function currently only supports 2D and 3D data.')
                     exit(0)
 
+                print("VALID GEN LOOP: img_batch.shape: ", img_batch.shape)
+                print("VALID GEN LOOP: mask_batch.shape: ", mask_batch.shape)
                 count += 1
                 if count % batchSize == 0:
                     count = 0
@@ -263,6 +324,7 @@ def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1,
 def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, numSlices=1, subSampAmt=0,
                           stride=1, downSampAmt=1):
     # Create placeholders for testing
+    print(f"\nTEST GEN: net_input_shape: {net_input_shape}, net: <not a param>")
     logging.info('\nload_2D_data.generate_test_batches')
     img_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
     count = 0
@@ -293,6 +355,7 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
                 logging.error('\nError this function currently only supports 2D and 3D data.')
                 exit(0)
 
+            print("TEST GEN LOOP: img_batch.shape: ", img_batch.shape)
             count += 1
             if count % batchSize == 0:
                 count = 0

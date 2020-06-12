@@ -46,7 +46,7 @@ Enhancement:
 
 This fork is an update by Jamie Lea (jmltf7@mail.umsl.edu) that converts the project to TF 2.x (targetting 2.2).
 I am not a Tensorflow expert, and would appreciate any and all feedback to make it more TF 2.2 idiomatic.
-There is sitll much to do.  However, I did this mainly to get at the layers, losses, etc.  Not the project itself.
+There is still much to do.  However, I did this mainly to get at the layers, losses, etc.  Not the project itself.
 '''
 
 from __future__ import print_function
@@ -65,7 +65,7 @@ from utils.model_helper import create_model
 
 time = strftime("%Y%m%d-%H%M%S", gmtime())
 RESOLUTION = 512  # Resolution of the input for the model.
-GRAYSCALE = True
+GRAYSCALE = False
 LOGGING_FORMAT = '%(levelname)s %(asctime)s: %(message)s'
 
 
@@ -288,6 +288,11 @@ if __name__ == '__main__':
                         Choices are: ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"], default is 'WARN'.  Setting a level
                         filters out lower levels (earlier in the list).
                         ''')
+    parser.add_argument("--grayscale", action="store_true",
+        help='''
+        TODO: NOT IMPLEMENTED
+        Should RGB be converted to greyscale?
+        ''')
     arguments = parser.parse_args()
 
     # assuming loglevel is bound to the string value obtained from the
