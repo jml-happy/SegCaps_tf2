@@ -182,8 +182,8 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
                     exit(0)
 
 
-                print("TRAIN GEN LOOP: img_batch.shape: ", img_batch.shape)
-                print("TRAIN GEN LOOP: mask_batch.shape: ", mask_batch.shape)
+                # print("TRAIN GEN LOOP: img_batch.shape: ", img_batch.shape)
+                # print("TRAIN GEN LOOP: mask_batch.shape: ", mask_batch.shape)
                 count += 1
                 if count % batchSize == 0:
                     count = 0
@@ -238,7 +238,7 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
                 img_batch[:count,...], mask_batch[:count,...] = augmentImages(img_batch[:count,...],
                                                                               mask_batch[:count,...])
             if net.find('caps') != -1:
-                # print("Inside the bottom part")
+                print("Inside the bottom part")
                 yield ([img_batch[:count, ...], mask_batch[:count, ...]],
                        [mask_batch[:count, ...], mask_batch[:count, ...] * img_batch[:count, ...]])
             else:
@@ -303,8 +303,8 @@ def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1,
                     logging.error('\nError this function currently only supports 2D and 3D data.')
                     exit(0)
 
-                print("VALID GEN LOOP: img_batch.shape: ", img_batch.shape)
-                print("VALID GEN LOOP: mask_batch.shape: ", mask_batch.shape)
+                # print("VALID GEN LOOP: img_batch.shape: ", img_batch.shape)
+                # print("VALID GEN LOOP: mask_batch.shape: ", mask_batch.shape)
                 count += 1
                 if count % batchSize == 0:
                     count = 0
@@ -355,7 +355,7 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
                 logging.error('\nError this function currently only supports 2D and 3D data.')
                 exit(0)
 
-            print("TEST GEN LOOP: img_batch.shape: ", img_batch.shape)
+            # print("TEST GEN LOOP: img_batch.shape: ", img_batch.shape)
             count += 1
             if count % batchSize == 0:
                 count = 0

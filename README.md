@@ -71,7 +71,8 @@ Recommend not using a conda environment (conda uses their own TF 2.1 fork which 
 8. Renamed data folder to "one_image" to be more correct, added a "one_image_two_dogs" example
     * this is to show how an RGBA mask with > 2 colors still becomes binary
 9. Experimenting with the cococrawler.py
-10. Added a script to inspect the .npz files
+10. Added an iPython Notebook to inspect the .npz files
+    * can see that the RGBA mask is saved as a 1-D "grayscale" numpy array zip.
 11. Changed the way debug images are saved (three images: image, mask, combined)
 
 

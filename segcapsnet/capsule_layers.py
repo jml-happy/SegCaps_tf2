@@ -59,8 +59,8 @@ class Mask(layers.Layer):
 
             # debug color images ###########################################
             # print("\n")
-            print("\nMASK LAYER: input.get_shape().ndims", input.get_shape().ndims)
-            print("MASK LAYER: input.get_shape()", input.get_shape())
+            # print("\nMASK LAYER: input.get_shape().ndims", input.get_shape().ndims)
+            # print("MASK LAYER: input.get_shape()", input.get_shape())
             # print("input.shape", input.shape)
 
             # print("")
@@ -75,8 +75,8 @@ class Mask(layers.Layer):
             # print("\n")
             # ###
 
-            print("MASK LAYER: mask.get_shape().ndims", mask.get_shape().ndims)
-            print("MASK LAYER: mask.get_shape()", mask.get_shape())
+            # print("MASK LAYER: mask.get_shape().ndims", mask.get_shape().ndims)
+            # print("MASK LAYER: mask.get_shape()", mask.get_shape())
             # print("mask.shape", mask.shape)
 
             # print("")
@@ -95,7 +95,7 @@ class Mask(layers.Layer):
                 masked = mask * input
 
         else: # Mask using the capsule with maximal length. For prediction
-            if inputs.get_shape().ndims == 3:
+            if inputs.get_shape().ndims == 3:  # this doesn't happen
                 x = K.sqrt(K.sum(K.square(inputs), -1)) #maximal euclidean length
                 mask = K.one_hot(indices=K.argmax(x, 1), num_classes=x.get_shape().as_list()[1])
                 masked = K.batch_flatten(K.expand_dims(mask, -1) * inputs)

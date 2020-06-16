@@ -214,7 +214,7 @@ def change_background_color(img, original_color, new_color):
     '''
     Convert mask color of 4 channels png image to new color 
     '''
-    print("Start change background color")
+    # print("Start change background color")
     r1, g1, b1, a1 = original_color[0], original_color[1], original_color[2], original_color[3]  # Original value
     # mask background color (0,0,0,0)
     r2, g2, b2, a2 = new_color[0], new_color[1], new_color[2], new_color[3] # Value that we want to replace it with
@@ -222,7 +222,7 @@ def change_background_color(img, original_color, new_color):
     red, green, blue, alpha = img[:,:,0], img[:,:,1], img[:,:,2], img[:,:,3]
     mask = (red == r1) & (green == g1) & (blue == b1) & (alpha == a1)
     img[:,:,:4][mask] = [r2, g2, b2, a2]
-    print("End change background color")
+    # print("End change background color")
     return img
     
 def convert_mask_data(mask, resolution = RESOLUTION, from_background_color = COCO_BACKGROUND,
