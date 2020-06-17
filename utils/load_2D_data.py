@@ -117,9 +117,11 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
     img_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
     # mask_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
     mask_batch = np.zeros((np.concatenate(((batchSize,), (net_input_shape[0], net_input_shape[1], 1)))), dtype=np.uint8)
+    print(f"TRAIN: img_batch shape: {img_batch.shape}, net: {net}")
+    print(f"TRAIN: mask_batch shape: {mask_batch.shape}, net: {net}")
     print("TRAIN GEN: img_batch.ndim: ", img_batch.ndim)
     print("TRAIN GEN: mask_batch.ndim: ", mask_batch.ndim)
-
+    train_printed_yield_shape_once = False
     while True:
         if shuff:
             shuffle(train_list)
@@ -229,6 +231,10 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
                         # [(1, 512, 512, 3), (1, 512, 512, 1)], [(1, 512, 512, 1), (1, 512, 512, 3)]
                         # or [(1, 512, 512, 3), (1, 512, 512, 3)], [(1, 512, 512, 3), (1, 512, 512, 3)]
                         # print("Inside the indice loop!")
+                        if not train_printed_yield_shape_once:
+                            print("TRAIN GEN LOOP YIELD: img_batch.shape: ", img_batch.shape)
+                            print("TRAIN GEN LOOP YIELD: mask_batch.shape: ", mask_batch.shape)
+                            train_printed_yield_shape_once = True
                         yield ([img_batch, mask_batch], [mask_batch, mask_batch*img_batch])
                     else:
                         yield (img_batch, mask_batch)
@@ -255,9 +261,12 @@ def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1,
     # THIS FORECES MASKS TO BE CREYSCALE
     # 3-channel masks cause crash, even with all GREYSCALE constants set False.
     mask_batch = np.zeros((np.concatenate(((batchSize,), (net_input_shape[0], net_input_shape[1], 1)))), dtype=np.uint8)  ## changed to this to match train
+    
+    print(f"TRAIN: img_batch shape: {img_batch.shape}, net: {net}")
+    print(f"TRAIN: mask_batch shape: {mask_batch.shape}, net: {net}")
     print("VALID GEN: img_batch.ndim: ", img_batch.ndim)
     print("VALID GEN: mask_batch.ndim: ", mask_batch.ndim)
-
+    val_printed_yield_shape_once = False
     while True:
         if shuff:
             shuffle(val_list)
@@ -309,6 +318,10 @@ def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1,
                 if count % batchSize == 0:
                     count = 0
                     if net.find('caps') != -1:
+                        if not val_printed_yield_shape_once:
+                            print("VAL GEN LOOP YIELD: img_batch.shape: ", img_batch.shape)
+                            print("VAL GEN LOOP YIELD: mask_batch.shape: ", mask_batch.shape)
+                            val_printed_yield_shape_once = True
                         yield ([img_batch, mask_batch], [mask_batch, mask_batch * img_batch])
                     else:
                         yield (img_batch, mask_batch)
@@ -329,6 +342,7 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
     img_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
     count = 0
     logging.info('\nload_2D_data.generate_test_batches: test_list=%s'%(test_list))
+    test_printed_yield_shape_once = False
     for i, scan_name in enumerate(test_list):
         try:
             scan_name = scan_name[0]
@@ -359,6 +373,9 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
             count += 1
             if count % batchSize == 0:
                 count = 0
+                if not test_printed_yield_shape_once:
+                    print("TEST GEN LOOP YIELD: img_batch.shape: ", img_batch.shape)
+                    test_printed_yield_shape_once = True
                 yield (img_batch) 
 
     if count != 0:

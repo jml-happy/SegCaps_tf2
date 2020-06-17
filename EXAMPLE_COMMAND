@@ -1,0 +1,1 @@
+python3 main.py --data_root_dir my_data/coco/stopsign_250/ --net capsbasic --initial_lr 0.1 --dataset mscoco17 --epochs 500 --patience 50 --train --test

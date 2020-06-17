@@ -47,6 +47,7 @@ class Mask(layers.Layer):
     def __init__(self, resize_masks=False, **kwargs):
         super(Mask, self).__init__(**kwargs)
         self.resize_masks = resize_masks
+        # self.printed_ndims_once = False
 
     def call(self, inputs, **kwargs):
         if type(inputs) is list: # The true label is used to mask the output of capsule layer. For training
@@ -59,43 +60,54 @@ class Mask(layers.Layer):
 
             # debug color images ###########################################
             # print("\n")
-            # print("\nMASK LAYER: input.get_shape().ndims", input.get_shape().ndims)
-            # print("MASK LAYER: input.get_shape()", input.get_shape())
-            # print("input.shape", input.shape)
 
-            # print("")
+            ### NOTE: FOR COLOR: ndims is 5: (?, 512, 512, 512, 1 16) as expected
 
-            # print("len(input[input): ", len(input))
-            # print("len(input[input[0,:]): ", len(input[0,:]))
-            # print("len(input[input[0,0,:]): ", len(input[0,0,:]))
-            # print("len(input[input[0,0,0,:]): ", len(input[0,0,0,:]))
-            # print("len(input[input[0,0,0,0,:]): ", len(input[0,0,0,0,:]))
+            print("\nMASK LAYER: input.get_shape().ndims", input.get_shape().ndims)
+            print("MASK LAYER: input.get_shape()", input.get_shape())
+            print("input.shape", input.shape)
 
-            # ###
-            # print("\n")
-            # ###
+            #       # print("")
 
-            # print("MASK LAYER: mask.get_shape().ndims", mask.get_shape().ndims)
-            # print("MASK LAYER: mask.get_shape()", mask.get_shape())
-            # print("mask.shape", mask.shape)
+            #       # print("len(input[input): ", len(input))
+            #       # print("len(input[input[0,:]): ", len(input[0,:]))
+            #       # print("len(input[input[0,0,:]): ", len(input[0,0,:]))
+            #       # print("len(input[input[0,0,0,:]): ", len(input[0,0,0,:]))
+            #       # print("len(input[input[0,0,0,0,:]): ", len(input[0,0,0,0,:]))
 
-            # print("")
+            #       # ###
+            #       # print("\n")
+            #       # ###
 
-            # print("len(mask[mask): ", len(mask))
-            # print("len(mask[mask[0,:]): ", len(mask[0,:]))
-            # print("len(mask[mask[0,0,:]): ", len(mask[0,0,:]))
-            # print("len(mask[mask[0,0,0,:]): ", len(mask[0,0,0,:]))
-            # print("len(mask[mask[0,0,0,0,:]): ", len(mask[0,0,0,0,:]))
-            # print("\n\n")
-            # ##############################################################
+            #       # print("MASK LAYER: mask.get_shape().ndims", mask.get_shape().ndims)
+            #       # print("MASK LAYER: mask.get_shape()", mask.get_shape())
+            #       # print("mask.shape", mask.shape)
 
+            #       # print("")
+
+            #       # print("len(mask[mask): ", len(mask))
+            #       # print("len(mask[mask[0,:]): ", len(mask[0,:]))
+            #       # print("len(mask[mask[0,0,:]): ", len(mask[0,0,:]))
+            #       # print("len(mask[mask[0,0,0,:]): ", len(mask[0,0,0,:]))
+            #       # print("len(mask[mask[0,0,0,0,:]): ", len(mask[0,0,0,0,:]))
+            #       # print("\n\n")
+            #       # ##############################################################
+            #       # self.printed_ndims_once = True
             if input.get_shape().ndims == 3:
                 masked = K.batch_flatten(mask * input)
             else:
                 masked = mask * input
 
+        # not a list, e.g., testing
         else: # Mask using the capsule with maximal length. For prediction
-            if inputs.get_shape().ndims == 3:  # this doesn't happen
+            
+            ### NOTE: THROWS ERROR???
+
+            # print("\nMASK LAYER: input.get_shape().ndims", input.get_shape().ndims)
+            # print("MASK LAYER: input.get_shape()", input.get_shape())
+            # print("input.shape", input.shape)
+
+            if inputs.get_shape().ndims == 3:  # this doesn't happen ?????
                 x = K.sqrt(K.sum(K.square(inputs), -1)) #maximal euclidean length
                 mask = K.one_hot(indices=K.argmax(x, 1), num_classes=x.get_shape().as_list()[1])
                 masked = K.batch_flatten(K.expand_dims(mask, -1) * inputs)

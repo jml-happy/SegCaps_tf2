@@ -133,12 +133,20 @@ def main(args):
         imgIds = coco.getImgIds(catIds=catIds );
     
     print('\nImage Generating...')
+    items_so_far = []
+    if num > len(imgIds):
+        num = len(imgIds)
+        print(f"Requested more images than available, getting {num} images instead.")
     for i in tqdm(range(num)):
         try:
             if args.id is not None:
                 img = coco.loadImgs(imgIds[i])[0]
             else:
-                img = coco.loadImgs(imgIds[np.random.randint(0,len(imgIds))])[0]
+                img_j = np.random.randint(0,len(imgIds))
+                while img_j in items_so_far:
+                    img_j = np.random.randint(0,len(imgIds))
+                img = coco.loadImgs(imgIds[img_j])[0]
+                items_so_far.append(img_j)
         except Exception as e:
             print('\nError: Image ID: %s cannot be found in the annotation file.'%(e))
             continue
