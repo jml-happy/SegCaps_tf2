@@ -35,7 +35,7 @@ from scipy.ndimage.interpolation import map_coordinates
 
 from keras.preprocessing.image import random_rotation, random_shift, random_zoom, random_shear
 
-GRAYSCALE = False
+GRAYSCALE = True
 RESOLUTION = 512
 COCO_BACKGROUND = (68, 1, 84, 255)
 MASK_BACKGROUND = (0,0,0,0)    

@@ -59,7 +59,7 @@ plt.ioff()
 K.set_image_data_format('channels_last')
 
 RESOLUTION = 512
-GRAYSCALE = False
+GRAYSCALE = True
 
 
 def threshold_mask(raw_output, threshold):
